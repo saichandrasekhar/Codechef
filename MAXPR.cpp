@@ -16,16 +16,49 @@ using namespace std;
 
 
 #define MOD 1000000007
+#define MAXN 200002
+#define MAXD 99
+#define MIND -99
+#define DLEN 200
+
+//#define gcc getchar_unlocked
+#define gcc getchar
 
 int n;
 vector<int> a;
-int cts[101];
+int cts[MAXN][DLEN],gc;
+int tww[MAXN];
+int cv[101][DLEN],cvc[101];
 
 
-int modPower(int a,int b)
+int readPosInt()
 {
-    int ret=1;
-    a%=MOD;
+    int ret=0;
+    char c;
+    c=gcc();
+
+    while(c<'0' || c>'9')
+    {
+        //scanf("%c",&c);
+        c=gcc();
+    }
+
+    while(c>='0' && c<='9')
+    {
+        ret=ret*10+(c-'0');
+        c=gcc();
+    }
+
+    return ret;
+
+
+}
+
+int modPower(int aa,int b)
+{
+    i64 ret=1;
+    aa%=MOD;
+    i64 a=aa;
 
     while(b>0)
     {
@@ -40,19 +73,20 @@ int modPower(int a,int b)
         b/=2;
     }
 
-    return ret;
+    return (int)ret;
 
 }
 
-int modd(int a)
+void pree()
 {
-    if(a<0)
-    {
-        a+=MOD;
-    }
-    a%=MOD;
+    tww[0]=1;
+    int i;
 
-    return a;
+    for(i=1;i<MAXN;++i)
+    {
+        tww[i]=tww[i-1]<<1;
+        tww[i]%=MOD;
+    }
 }
 
 
@@ -61,51 +95,72 @@ int main()
 
     freopen("Text/MAXPR.txt","r",stdin);
 
-    int cases,t,i,j,curr;
+    int cases,t,i,j,curr,d,p2,ans;
 
-    scanf("%d",&cases);
+    //scanf("%d",&cases);
+    cases=readPosInt();
+
+    pree();
 
     while(cases--)
     {
         a.clear();
         memset(cts,0,sizeof(cts));
+        memset(cv,0,sizeof(cv));
+        memset(cvc,0,sizeof(cvc));
 
-        scanf("%d",&n);
+        //scanf("%d",&n);
+        n=readPosInt();
+        //printf("N\t%d\n",n);
 
         for(i=0;i<n;++i)
         {
-            scanf("%d",&t);
+            //scanf("%d",&t);
+            t=readPosInt();
+            //printf("A\t\t%d\n",t);
             a.PB(t);
-            ++cts[t];
         }
 
-        for(d=1;d<100;++d)
+        gc=n+1;
+
+        //++cv[a[0]];
+        //++cv[0];
+        ++cvc[a[0]];
+
+        for(i=2;i<=n;++i)
         {
-            for(i=1;i<=d;++i)
+            for(j=1;j<=100;++j)
             {
-                k=i;
-                while(k<=100)
+                //printf("DDD\n");
+
+                if(cvc[j]>0)
                 {
-                    curr=0;
-                    while(k<=100 && cts[k]==0)
-                    {
-                        k+=d;
-                    }
+                    d=a[i-1]-j;
 
-                    if(k<=100)
-                    {
-                        while(k<=100 && cts[k]!=0)
-                        {
-                            curr+=cts[k];
-                            k+=d;
-                        }
+                    gc+=cv[j][d+MAXD]+cvc[j];
+                    gc%=MOD;
 
+                    cv[a[i-1]][d+MAXD]+=cv[j][d+MAXD]+cvc[j];
+                    cv[a[i-1]][d+MAXD]%=MOD;
 
-                    }
                 }
             }
+
+            ++cvc[a[i-1]];
         }
 
+
+        //p2=modPower(2,n);
+        p2=tww[n];
+        ans=p2-gc;
+
+        if(ans<0)
+        {
+            ans+=MOD;
+        }
+
+        //printf("%d\t-\t%d\t=\t%d\n",p2,gc,ans);
+        printf("%d\n",ans);
     }
 
 	return 0;
