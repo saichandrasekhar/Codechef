@@ -28,6 +28,11 @@ using namespace std;
 #define VLL vector<i64>
 
 
+
+//#define gc getchar_unlocked
+#define gc getchar
+
+
 void prVectInt(VI vect)
 {
     int i;
@@ -72,12 +77,6 @@ void arrayToVectorInt(int *arr,VI &vect,int len)
     }
 }
 
-
-
-#define MOD 1000000007
-
-//#define gc getchar_unlocked
-#define gc getchar
 
 
 inline i64 readPosLLD()
@@ -190,121 +189,172 @@ inline int readInt()
     return ret;
 }
 
-VLL a,psum;
 
-i64 nth_rt(i64 x,int k)
+#define MOD 1000000007
+#define RANGE 1000000000000000001LL
+
+
+i64 lookup[1000001][61];
+
+int lookupfun(i64 x,int n,i64 prev)
 {
+    prev=prev>1000000 ? 1000000 : prev;
+    int hi=prev,lo=1,mid,res;
 
-    if(k==1)
+    while(lo<=hi)
+    {
+        mid=(lo+hi)>>1;
+
+        if(lookup[mid][n]<=x)
+        {
+            res=mid;
+            lo=mid+1;
+        }
+        else
+        {
+            hi=mid-1;
+        }
+    }
+
+    return res;
+}
+
+
+void pre()
+{
+    int i,j;
+    i64 f;
+    FOR(i,1,1000001)
+    {
+        f=1;
+
+        REP(j,60)
+        {
+            lookup[i][j]=f;
+            if(f>(RANGE-1)/i)
+            {
+                f=RANGE;
+            }
+            else
+            {
+                f*=i;
+            }
+        }
+    }
+}
+
+i64 mysqrt(i64 x)
+{
+    return sqrt(x);
+}
+
+i64 root(i64 x,int n,i64 pre)
+{
+    if(n>=60)
+    {
+        return 1;
+    }
+    if(n==1)
     {
         return x;
     }
 
-    double powRoot=1.0/k;
-    double origRoot=pow(x,powRoot);
-
-    i64 root=origRoot;
-    i64 root2=origRoot + 1e-7;
-
-    if(root != root2)
+    if(n==2)
     {
-        double nextPow=pow(root2,k);
-
-        if(nextPow<x || fabs(nextPow - x)<=1e-6)
-        {
-            return root2;
-        }
+        return mysqrt(x);
     }
 
-    return root;
+    return lookupfun(x,n,pre);
 }
-
 
 int main()
 {
-
     freopen("Text/FUNC.txt","r",stdin);
 
-    int cases,i,j;
-    int n,q,ti;
-    i64 x,res,rt,tll;
+    pre();
+
+    int cases,i,j,n,q;
+    i64 x,ans,val,inter,arr[100010],brr[100010],tll;
 
     scanf("%d",&cases);
     //printf("DD\n");
     while(cases--)
     {
-
-
-        a.clear();
-        psum.clear();
         scanf("%d %d",&n,&q);
 
         REP(i,n)
         {
-            //printf("DD\n");
-            scanf("%d",&ti);
-            ti%=MOD;
-            if(ti<0)
+            scanf("%lld",arr+i);
+            arr[i]%=MOD;
+            if(arr[i]<0)
             {
-                ti+=MOD;
+                arr[i]+=MOD;
             }
-            a.PB(ti);
-            psum.PB(0);
+            brr[i]=arr[i];
+        }
 
-            if(i)
+        for(i=n-2;i>=0;--i)
+        {
+            brr[i]+=brr[i+1];
+
+            brr[i]%=MOD;
+
+            if(brr[i]<0)
             {
-                psum[i]+=psum[i-1]+a[i];
+                brr[i]+=MOD;
+            }
+        }
+
+        REP(i,q)
+        {
+            ans=0;
+            scanf("%lld",&x);
+            val=x;
+
+            for(j=1;j<=n;++j)
+            {
+                val=root(x,j,val);
+
+                if(val==1)
+                {
+                    ans+=brr[j-1];
+                    ans%=MOD;
+
+                    if(ans<0)
+                    {
+                        ans+=MOD;
+                    }
+                    break;
+                }
+
+                val%=MOD;
+                if(val<0)
+                {
+                    val+=MOD;
+                }
+
+                tll=val*arr[j-1];
+                tll%=MOD;
+                if(tll<0)
+                {
+                    tll+=MOD;
+                }
+
+                ans+=tll;
+                if(ans<0)
+                {
+                    ans+=MOD;
+                }
+            }
+
+            if(i==q-1)
+            {
+                printf("%lld\n",ans);
             }
             else
             {
-                psum[i]=a[i];
+                printf("%lld ",ans);
             }
-
-            psum[i]%=MOD;
-        }
-
-        REP(j,q)
-        {
-
-            scanf("%lld",&x);
-
-            res=0;
-
-            REP(i,n)
-            {
-                rt=nth_rt(x,i+1);
-
-                if(rt>1)
-                {
-                    res+=((rt%MOD)*a[i])%MOD;
-                    res%=MOD;
-                }
-                else
-                {
-                    tll=psum[n-1];
-
-                    if(i!=0)
-                    {
-                        tll-=psum[i-1];
-                    }
-
-                    tll%=MOD;
-                    if(tll<0)
-                    {
-                        tll+=MOD;
-                    }
-                    res+=tll;
-                    res%=MOD;
-                    break;
-                }
-            }
-
-            if(j)
-            {
-                printf(" ");
-            }
-
-            printf("%d",res);
         }
 
         printf("\n");
